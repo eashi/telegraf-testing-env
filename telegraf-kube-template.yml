@@ -1,0 +1,68 @@
+apiVersion: v1
+data:
+  telegraf.conf: |+
+    [global_tags]
+    [agent]
+      interval = "10s"
+      round_interval = true
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      collection_jitter = "0s"
+      flush_interval = "10s"
+      flush_jitter = "0s"
+      precision = ""
+      hostname = ""
+      omit_hostname = false
+
+    [[inputs.sqlserver]]
+      servers = [""]
+      name_prefix = "kube_"
+      database_type = "SQLServer"
+
+    [[outputs.azure_data_explorer]]
+      endpoint_url = ""
+      database = "mydatabase"
+
+kind: ConfigMap
+metadata:
+  name: telegraf-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: telegraf
+  name: telegraf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: telegraf
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: telegraf
+    spec:
+      containers:
+      - image: telegrafkusto.azurecr.io/telegraf
+        name: telegraf
+        volumeMounts:
+          - mountPath: /etc/telegraf/
+            name: telegraf-config
+        env:
+          - name: AZURE_TENANT_ID
+            value: 
+          - name: AZURE_CLIENT_ID
+            value: 
+          - name: AZURE_CLIENT_SECRET
+            value: 
+      tolerations:
+        - key: "workload"
+          operator: "Equal"
+          value: "telegraf"
+          effect: "NoSchedule"
+      volumes:
+        - name: telegraf-config
+          configMap:
+            name: telegraf-config
