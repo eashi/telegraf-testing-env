@@ -5,8 +5,8 @@ data:
     [agent]
       interval = "10s"
       round_interval = true
-      metric_batch_size = 10000
-      metric_buffer_limit = 10000
+      metric_batch_size = 20000
+      metric_buffer_limit = 20000
       collection_jitter = "0s"
       flush_interval = "10s"
       flush_jitter = "0s"
@@ -45,6 +45,8 @@ spec:
       labels:
         app: telegraf
     spec:
+      nodeSelector:
+        workload: telegraf
       containers:
       - image: telegrafkusto.azurecr.io/telegraf
         name: telegraf
